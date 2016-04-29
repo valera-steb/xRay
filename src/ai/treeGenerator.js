@@ -55,6 +55,23 @@ define([], function () {
 
             return map;
         },
+        
+        defaultConfig:{
+            width: 0,
+            height: 0,
+            mark: x=>'',
+            finalMark: null
+        },
+        
+        extractConfig: function (c) {
+            var out = {};
+            
+            for(var key in m.defaultConfig){
+                out[key] = (c && c[key]) || m.defaultConfig[key];
+            }
+            
+            return out;
+        },
 
         buildTree: function (x, y) {
             m.id = 0;
