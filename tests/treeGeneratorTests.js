@@ -1,16 +1,23 @@
 /**
  * Created by steb on 02.04.2016.
  */
-define(['c/ai/treeGenerator', '_objectsEqualityMatcher'], function (treeGenerator, matcher) {
+define([
+    'c/ai/treeGenerator',
+    '_objectsEqualityMatcher',
+    'c/i/utils'
+], function (treeGenerator, matcher, utils) {
 
     describe('treeGenerator', function () {
-        beforeEach(function(){
+        beforeEach(function () {
             jasmine.addMatchers(matcher);
         });
 
 
         it('должен запоминать карту ид-ключ', function () {
-            var map = treeGenerator.buildTree(1, 2);
+            var map = treeGenerator.buildTree({
+                height: 1,
+                width: 2
+            });
 
             expect(map).toBeDefined();
             expect(map.idToKey).toEqual({
@@ -23,7 +30,7 @@ define(['c/ai/treeGenerator', '_objectsEqualityMatcher'], function (treeGenerato
         it('должен строить двунаправленное дерево ходов для заданной размерности', function () {
             var map = treeGenerator.buildTree({
                 height: 1,
-                weight: 2
+                width: 2
             });
 
             expect(map).toBeDefined();
@@ -48,19 +55,46 @@ define(['c/ai/treeGenerator', '_objectsEqualityMatcher'], function (treeGenerato
             expect(map).toEqual(['00', 'x0', 'xy', '0x', 'yx']);
         });
 
-        xit('должен добавлять пометки состояний (с помошью заданного stateMarker-а)', function () {
+        it('должен добавлять пометки состояний (с помошью заданного stateMarker-а)', function () {
+            var t = {};
+            ['base', '00', 'x0', 'xy', '0x', 'yx'].forEach((x, y)=>t[x] = y);
 
+            var map = treeGenerator.buildTree({
+                height: 1,
+                width: 2,
+                mark: x=>t[x]
+            });
+
+            var marks = utils.project(map.keys, x=>x.m);
+            expect(marks).toEqual(t);
         });
 
-        xit('должен пропускать в набор только допустимые состояния ' +
-            '(прерывать погружение в дерево ходов достигнув состояния с пометкой конечное)');
+        it('должен пропускать в набор только допустимые состояния ' +
+            '(прерывать погружение в дерево ходов достигнув состояния с пометкой конечное)', function () {
+            var
+                final = {'xy': true, '0x': true},
+                valid = ['base', '00', 'x0', 'xy', '0x'];
 
-        it('должен реализовывать настройки по умолчанию и перекрывать их переданными', function(){
+            var map = treeGenerator.buildTree({
+                height: 1,
+                width: 2,
+                mark: x=>final[x],
+                isFinalMark: m => m
+            });
+
+            var keys = [];
+            utils.project(map.keys, (x, y)=>keys.push(y));
+
+            expect(valid.sort()).toEqual(keys.sort());
+        });
+
+        it('должен реализовывать настройки по умолчанию и перекрывать их переданными ' +
+            '{height, width, mark(), isFinalMark()}', function () {
             var defaultConfig = {
                 width: 0,
                 height: 0,
                 mark: x=>'',
-                finalMark: null
+                isFinalMark: ()=>!1
             };
 
             expect(defaultConfig).toEqualWithFunc(treeGenerator.extractConfig());
@@ -70,7 +104,7 @@ define(['c/ai/treeGenerator', '_objectsEqualityMatcher'], function (treeGenerato
             defaultConfig.mark = x=>'y';
 
             expect(defaultConfig).toEqualWithFunc(
-                treeGenerator.extractConfig({height:1, mark: x=>'y'})
+                treeGenerator.extractConfig({height: 1, mark: x=>'y'})
             );
         });
     });

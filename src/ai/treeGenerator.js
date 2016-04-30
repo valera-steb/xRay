@@ -23,7 +23,9 @@ define([], function () {
                 if (!nextKey)
                     continue;
 
-                callback(key, nextKey);
+                var isFiniteState = callback(key, nextKey);
+                if(isFiniteState)
+                    continue;
 
                 m.pickUpMarks(nextKey, nextMark, callback);
             }
@@ -43,51 +45,54 @@ define([], function () {
 
         id: 0,
 
-        getKeyMap: function (res, key) {
+        getKeyMap: function (res, key, config) {
             var map = res.keys[key];
 
             if (map) return map;
 
             map = res.keys[key] = {
-                i: ++m.id, t: [], f: []
+                i: ++m.id, t: [], f: [], m: config.mark(key)
             };
             res.idToKey[map.i] = key;
 
             return map;
         },
-        
-        defaultConfig:{
+
+        defaultConfig: {
             width: 0,
             height: 0,
             mark: x=>'',
-            finalMark: null
+            isFinalMark: ()=>!1
         },
-        
+
         extractConfig: function (c) {
             var out = {};
-            
-            for(var key in m.defaultConfig){
+
+            for (var key in m.defaultConfig) {
                 out[key] = (c && c[key]) || m.defaultConfig[key];
             }
-            
+
             return out;
         },
 
-        buildTree: function (x, y) {
+        buildTree: function (config) {
             m.id = 0;
+            config = m.extractConfig(config);
 
             var res = {
                 keys: {},
                 idToKey: {}
             };
 
-            m.buildKeys(x, y, function (key, nextKey) {
+            m.buildKeys(config.width, config.height, function (key, nextKey) {
                 var
-                    keyMap = m.getKeyMap(res, key),
-                    nextKeyMap = m.getKeyMap(res, nextKey);
+                    keyMap = m.getKeyMap(res, key, config),
+                    nextKeyMap = m.getKeyMap(res, nextKey, config);
 
                 keyMap.t.push(nextKeyMap.i);
-                nextKeyMap.f.push((keyMap.i))
+                nextKeyMap.f.push((keyMap.i));
+                
+                return config.isFinalMark(nextKeyMap.m);
             });
 
             return res;
@@ -95,10 +100,4 @@ define([], function () {
     };
 
     return m;
-
-    return {
-        '1': {key: 'x00000000', outs: [10]},
-        '2': {key: '0x0000000', outs: []},
-        '10': {key: 'xy0000000'}
-    }
 });
