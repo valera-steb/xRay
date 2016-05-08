@@ -18,6 +18,7 @@
   ],
   "dependencies": {
     "requirejs": "~2.1.22",
-    "jasmine-core": "jasmine#~2.4.1"
+    "jasmine-core": "jasmine#~2.4.1",
+    "vis": "^4.16.1"
   }
 }
