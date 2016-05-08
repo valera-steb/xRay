@@ -11,7 +11,7 @@ define([], {
 
         return out;
     },
-    
+
     toArray: function (obj, ownPropertyCheck) {
         var out = [];
 
@@ -23,5 +23,18 @@ define([], {
         }
 
         return out;
+    },
+
+    toObject: function (array, callback) {
+        var obj = {};
+
+        array.forEach((x, i)=> {
+            var pair = callback(x, i);
+            
+            if (pair)
+                obj[pair.k] = pair.v;
+        });
+
+        return obj;
     }
 });

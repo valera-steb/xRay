@@ -28,6 +28,7 @@ require.config({
                 });
 
             console.log(JSON.stringify(graph));
+            window.graph = graph;
 
             var keys = utils.toArray(graph.keys);
 
