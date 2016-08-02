@@ -7,6 +7,7 @@ require.config({
     },
     callback: function () {
         var specs = [
+            'graphSeparatorTests',
             'graphTravelerTests',
             'stateMarkerTests',
             'treeGeneratorTests'

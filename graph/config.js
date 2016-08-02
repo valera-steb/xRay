@@ -23,7 +23,7 @@ require.config({
                 graph = tg.buildTree({
                     height: 2,
                     width: 2,
-                    mark: x=>final.some(y=>x == y),
+                    //mark: x=>final.some(y=>x == y),
                     isFinalMark: m => m
                 });
 
@@ -33,19 +33,47 @@ require.config({
             var keys = utils.toArray(graph.keys);
 
             var
+                maxWL = 0,
                 edges = [],
+                nodesW = {},
                 nodes = keys.map(x=> {
                     var l = x.v.t ? (x.v.t.length + 2) : 1;
-                    return {
+
+                    if (x.k == 'base')
+                        l = 1;
+                    if (l > maxWL)
+                        maxWL = l;
+
+                    return nodesW[x.v.i] = {
                         id: x.v.i,
                         label: x.k,
                         value: l,
                         mass: l
                     }
-                });
+                }),
+                duplicates = {};
 
             keys.forEach(f=> {
-                f.v.t && f.v.t.forEach(t=> edges.push({from: f.v.i, to: t}));
+                f.v.t && f.v.t.forEach(t=> {
+                    if (duplicates[f.v.i + '-' + t])
+                        return;
+
+                    var mass = nodesW[t].value;
+                    // if (nodesW[t].label != 'base') {
+                    //     if (!nodesW[t].converted) {
+                    //         nodesW[t].value = maxWL - mass + 1;
+                    //         nodesW[t].converted = mass;
+                    //     } else
+                    //         mass = nodesW[t].converted;
+                    // }
+
+                    edges.push({
+                        from: f.v.i,
+                        to: t,
+                        value: (mass - 1) / maxWL * 2
+                    });
+                    duplicates[f.v.i + '-' + t] = true;
+                });
             });
 
 
@@ -67,6 +95,13 @@ require.config({
                 },
                 edges: {
                     arrows: 'to'
+                },
+                // improvedLayout: false
+                physics: {
+                    solver: 'forceAtlas2Based',
+                    forceAtlas2Based:{
+                        springConstant: 0.0005
+                    }
                 }
             };
             network = new vis.Network(container, data, options);

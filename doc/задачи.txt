@@ -151,9 +151,9 @@
 
     .карта
         {
-            'xxx yy0 000': { id: 12, p: 'winner x'},
-            'xx0 yyx xyy': { id: 11, p: 'to x' },
-            'x00 yy0 000': { id: 10, p: 'middle' }
+            12: 'winner x',
+            11: 'to x',
+            10: 'middle'
         }
 
 .название:
